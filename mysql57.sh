@@ -49,6 +49,7 @@ end_message
 start_message
 echo "yum updateを実行します"
 echo ""
+yum -y update
 end_message
 
 #MariaDBを削除
