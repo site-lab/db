@@ -24,3 +24,6 @@ MariaDB10.2をインストールします。
 ## [mariadb103.sh](https://github.com/site-lab/db/blob/master/mariadb103.sh)
 最新安定版のMariaDB10.3をインストールします。
 自動起動もOnとなります
+
+## [mysql57.sh](https://github.com/site-lab/db/blob/master/mysql57.sh)
+MySQL5.7のインストールになります。MariaDBは削除します。
