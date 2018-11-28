@@ -45,18 +45,16 @@ end_message
 
 
 # yum updateを実行
-echo "yum updateを実行します"
-echo ""
 
 start_message
-yum -y update
+echo "yum updateを実行します"
+echo ""
 end_message
 
 #MariaDBを削除
+start_message
 echo "MariaDBを削除します"
 echo ""
-start_message
-yum -y remove mariadb-libs
 rm -rf /var/lib/mysql/
 end_message
 
@@ -67,31 +65,30 @@ yum info mysql-community-server
 end_message
 
 #MySQLのインストール
+start_message
 echo "MySQLのインストール"
 echo ""
-start_message
-yum -y install mysql-community-server
 yum list installed | grep mysql
 end_message
 
 #バージョン確認
+start_message
 echo "MySQLのバージョン確認"
 echo ""
-start_message
 mysql --version
 end_message
 
 #自動起動
+start_message
 echo "MySQLの自動起動を設定"
 echo ""
-start_message
 systemctl enable mysqld.service
 end_message
 
 #自動起動
+start_message
 echo "MySQLの起動"
 echo ""
-start_message
 systemctl start mysqld.service
 systemctl status mysqld.service
 end_message
@@ -104,5 +101,10 @@ rootのパスワードは
 cat /var/log/mysqld.log
 [Note] A temporary password is generated for root@localhost:"ここにパスワードが記述されている"
 
-となります。
+となります。パスワードの変更は絶対行ってください
+MySQLのポリシーではパスワードは
+"8文字以上＋大文字小文字＋数値＋記号"
+でないといけないみたいです
+
+MySQL 5.7 からユーザーのパスワードの有効期限がデフォルトで360日になりました。 360日するとパスワードの変更を促されてログインできなくなります。 
 EOF
