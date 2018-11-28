@@ -16,3 +16,11 @@ wgetを使用する場合は[環境構築スクリプトを公開してます](h
 **sh ファイル名.sh** ←同じ階層にある場合
 
 **sh /home/ユーザー名/ファイル名.sh** ユーザー階層にある場合（rootユーザー実行時）
+
+## [mariadb102.sh](https://github.com/site-lab/db/blob/master/mariadb102.sh)
+MariaDB10.2をインストールします。
+自動起動もOnとなります
+
+## [mariadb103.sh](https://github.com/site-lab/db/blob/master/mariadb103.sh)
+最新安定版のMariaDB10.3をインストールします。
+自動起動もOnとなります
