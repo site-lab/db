@@ -28,3 +28,6 @@ MariaDB10.2をインストールします。
 
 ## [mysql57.sh](https://github.com/site-lab/db/blob/master/mysql57.sh)
 MySQL5.7のインストールになります。MariaDBは削除します。
+
+## [mysql8.sh](https://github.com/site-lab/db/blob/master/mysql8.sh)
+MySQL8のインストールになります。MariaDBは削除します。
