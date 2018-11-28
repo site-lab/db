@@ -68,6 +68,7 @@ end_message
 start_message
 echo "MySQLのインストール"
 echo ""
+yum -y install mysql-community-server
 yum list installed | grep mysql
 end_message
 
@@ -106,5 +107,5 @@ MySQLのポリシーではパスワードは
 "8文字以上＋大文字小文字＋数値＋記号"
 でないといけないみたいです
 
-MySQL 5.7 からユーザーのパスワードの有効期限がデフォルトで360日になりました。 360日するとパスワードの変更を促されてログインできなくなります。 
+MySQL 5.7 からユーザーのパスワードの有効期限がデフォルトで360日になりました。 360日するとパスワードの変更を促されてログインできなくなります。
 EOF
