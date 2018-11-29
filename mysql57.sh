@@ -145,7 +145,8 @@ end_message
 #cnfファイルの表示
 cat /etc/my.cnf
 
-
+echo ""
+echo ""
 cat <<EOF
 ステータスがアクティブの場合は起動成功です
 
