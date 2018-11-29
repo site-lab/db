@@ -49,7 +49,7 @@ end_message
 start_message
 echo "yum updateを実行します"
 echo ""
-yum -y update
+#yum -y update
 end_message
 
 #MariaDBを削除
@@ -80,6 +80,53 @@ echo ""
 mysql --version
 end_message
 
+#my.cnfの設定を変える
+start_message
+echo "ファイル名をリネーム"
+echo "/etc/my.cnf.default"
+mv /etc/my.cnf /etc/my.cnf.default
+
+echo "新規ファイルを作成してパスワードを無制限使用に変える"
+cat <<EOF >/etc/my.cnf
+# For advice on how to change settings please see
+# http://dev.mysql.com/doc/refman/8.0/en/server-configuration-defaults.html
+
+[mysqld]
+#
+# Remove leading # and set to the amount of RAM for the most important data
+# cache in MySQL. Start at 70% of total RAM for dedicated server, else 10%.
+# innodb_buffer_pool_size = 128M
+#
+# Remove the leading "# " to disable binary logging
+# Binary logging captures changes between backups and is enabled by
+# default. It's default setting is log_bin=binlog
+# disable_log_bin
+#
+# Remove leading # to set options mainly useful for reporting servers.
+# The server defaults are faster for transactions and fast SELECTs.
+# Adjust sizes as needed, experiment to find the optimal values.
+# join_buffer_size = 128M
+# sort_buffer_size = 2M
+# read_rnd_buffer_size = 2M
+#
+# Remove leading # to revert to previous value for default_authentication_plugin,
+# this will increase compatibility with older clients. For background, see:
+# https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_default_authentication_plugin
+# default-authentication-plugin=mysql_native_password
+
+datadir=/var/lib/mysql
+socket=/var/lib/mysql/mysql.sock
+
+character-set-server = utf8
+default_password_lifetime = 0
+
+#slowクエリの設定
+slow_query_log=ON
+slow_query_log_file=/var/log/mysql-slow.log
+long_query_time=0.01
+EOF
+end_message
+
 #自動起動
 start_message
 echo "MySQLの自動起動を設定"
@@ -96,17 +143,28 @@ systemctl status mysqld.service
 end_message
 
 
+#cnfファイルの表示
+cat /etc/my.cnf
+
+echo ""
+echo ""
 cat <<EOF
 ステータスがアクティブの場合は起動成功です
 
+---------------------------------------------
 rootのパスワードは
 cat /var/log/mysqld.log
 [Note] A temporary password is generated for root@localhost:"ここにパスワードが記述されている"
+---------------------------------------------
 
 となります。パスワードの変更は絶対行ってください
 MySQLのポリシーではパスワードは
 "8文字以上＋大文字小文字＋数値＋記号"
 でないといけないみたいです
 
+---------------------------------------------
 MySQL 5.7 からユーザーのパスワードの有効期限がデフォルトで360日になりました。 360日するとパスワードの変更を促されてログインできなくなります。
+・slow queryはデフォルトでONとなっています
+・秒数は0.01秒となります
+---------------------------------------------
 EOF

@@ -28,6 +28,13 @@ MariaDB10.2をインストールします。
 
 ## [mysql57.sh](https://github.com/site-lab/db/blob/master/mysql57.sh)
 MySQL5.7のインストールになります。MariaDBは削除します。
+* 文字コード：UTF-8
+* デフォルトの有効期限無効
+* slowクエリの設定：有効（0.01秒）
+
 
 ## [mysql8.sh](https://github.com/site-lab/db/blob/master/mysql8.sh)
 MySQL8のインストールになります。MariaDBは削除します。
+* 文字コード：UTF-8
+* デフォルトの有効期限無効
+* slowクエリの設定：有効（0.01秒）
