@@ -56,7 +56,7 @@ end_message
 start_message
 echo "MariaDBを削除します"
 echo ""
-yum remove mariadb-libs
+yum -y remove mariadb-libs
 rm -rf /var/lib/mysql/
 end_message
 
@@ -141,6 +141,9 @@ echo ""
 systemctl start mysqld.service
 systemctl status mysqld.service
 end_message
+
+#cnfファイルの表示
+cat /etc/my.cnf
 
 
 cat <<EOF
