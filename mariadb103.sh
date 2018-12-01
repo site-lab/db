@@ -59,7 +59,7 @@ yum clean all
 end_message
 
 # ディレクトリ作成
-echo "yum clean allを実行します"
+echo "mkdir /var/log/mysql"
 start_message
 mkdir /var/log/mysql
 end_message
