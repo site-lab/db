@@ -58,6 +58,13 @@ start_message
 yum clean all
 end_message
 
+# ディレクトリ作成
+echo "yum clean allを実行します"
+start_message
+mkdir /var/log/mysql
+end_message
+
+
 # MariaDBの設定ファイルを追加
 start_message
 cat >/etc/yum.repos.d/MariaDB.repo <<'EOF'
