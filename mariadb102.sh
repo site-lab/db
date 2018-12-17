@@ -15,9 +15,6 @@ URL：https://www.logw.jp/
 
 COMMENT
 
-echo "インストールスクリプトを開始します"
-echo "このスクリプトのインストール対象はCentOS7です。"
-echo ""
 
 start_message(){
 echo ""
@@ -31,43 +28,50 @@ echo "======================完了======================"
 echo ""
 }
 
-#EPELリポジトリのインストール
-start_message
-yum remove -y epel-release
-yum -y install epel-release
-end_message
+#CentOS7か確認
+if [ -e /etc/redhat-release ]; then
+    DIST="redhat"
+    DIST_VER=`cat /etc/redhat-release | sed -e "s/.*\s\([0-9]\)\..*/\1/"`
 
-#gitリポジトリのインストール
-start_message
-yum -y install git
-end_message
+    if [ $DIST = "redhat" ];then
+      if [ $DIST_VER = "7" ];then
+        #EPELリポジトリのインストール
+        start_message
+        yum remove -y epel-release
+        yum -y install epel-release
+        end_message
 
-
-
-# yum updateを実行
-echo "yum updateを実行します"
-echo ""
-
-start_message
-yum -y update
-end_message
-
-# yumのキャッシュをクリア
-echo "yum clean allを実行します"
-start_message
-yum clean all
-end_message
-
-# ディレクトリ作成
-echo "mkdir /var/log/mysql"
-start_message
-mkdir /var/log/mysql
-end_message
+        #gitリポジトリのインストール
+        start_message
+        yum -y install git
+        end_message
 
 
-# MariaDBの設定ファイルを追加
-start_message
-cat >/etc/yum.repos.d/MariaDB.repo <<'EOF'
+
+        # yum updateを実行
+        echo "yum updateを実行します"
+        echo ""
+
+        start_message
+        yum -y update
+        end_message
+
+        # yumのキャッシュをクリア
+        echo "yum clean allを実行します"
+        start_message
+        yum clean all
+        end_message
+
+        # ディレクトリ作成
+        echo "mkdir /var/log/mysql"
+        start_message
+        mkdir /var/log/mysql
+        end_message
+
+
+        # MariaDBの設定ファイルを追加
+        start_message
+        cat >/etc/yum.repos.d/MariaDB.repo <<'EOF'
 # MariaDB 10.2 CentOS repository list
 # http://mariadb.org/mariadb/repositories/
 [mariadb]
@@ -77,15 +81,15 @@ gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
 
-yum -y install mariadb-server maradb-client
-yum list installed | grep mariadb
+        yum -y install mariadb-server maradb-client
+        yum list installed | grep mariadb
 
-end_message
+        end_message
 
-#ファイル作成
-start_message
-rm -rf /etc/etc/my.cnf.d/server.cnf
-cat >/etc/etc/my.cnf.d/server.cnf <<'EOF'
+        #ファイル作成
+        start_message
+        rm -rf /etc/etc/my.cnf.d/server.cnf
+        cat >/etc/etc/my.cnf.d/server.cnf <<'EOF'
 #
 # These groups are read by MariaDB server.
 # Use it for options that only the server (but not clients) should see
@@ -149,35 +153,47 @@ character-set-server = utf8
 # If you use the same .cnf file for MariaDB of different versions,
 # use this group for options that older servers don't understand
 [mariadb-10.2]
+
 EOF
 
-end_message
+        end_message
 
-#ディレクトリ作成
-start_message
-mkdir /var/log/mysql
-end_message
-
-
-#バージョン表示
-start_message
-mysql --version
-end_message
-
-#MariaDBの起動
-start_message
-systemctl start mariadb.service
-systemctl status mariadb.service
-end_message
-
-#自動起動の設定
-start_message
-systemctl enable mariadb
-systemctl list-unit-files --type=service | grep mariadb
-end_message
+        #ディレクトリ作成
+        start_message
+        mkdir /var/log/mysql
+        end_message
 
 
+        #バージョン表示
+        start_message
+        mysql --version
+        end_message
 
-cat <<EOF
-ステータスがアクティブの場合は起動成功です
+        #MariaDBの起動
+        start_message
+        systemctl start mariadb.service
+        systemctl status mariadb.service
+        end_message
+
+        #自動起動の設定
+        start_message
+        systemctl enable mariadb
+        systemctl list-unit-files --type=service | grep mariadb
+        end_message
+
+
+
+        cat <<EOF
+        ステータスがアクティブの場合は起動成功です
 EOF
+      else
+        echo "CentOS7ではないため、このスクリプトは使えません。このスクリプトのインストール対象はCentOS7です。"
+      fi
+    fi
+
+else
+  echo "このスクリプトのインストール対象はCentOS7です。CentOS7以外は動きません。"
+  cat <<EOF
+  検証LinuxディストリビューションはDebian・Ubuntu・Fedora・Arch Linux（アーチ・リナックス）となります。
+EOF
+fi
