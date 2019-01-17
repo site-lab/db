@@ -45,10 +45,14 @@ if [ -e /etc/redhat-release ]; then
         yum -y install git
         end_message
 
+        #ユーザー作成
+        start_message
+        #echo "centosユーザーを作成します"
+        #USERNAME='centos'
+        PASSWORD=$(more /dev/urandom  | tr -d -c '[:alnum:]' | fold -w 10 | head -1)
 
 
         # yum updateを実行
-
         start_message
         echo "yum updateを実行します"
         echo ""
@@ -150,11 +154,16 @@ EOF
 
         #ログイン
         mysql -u root　<<EOF
-show databases;
+use mysql
+UPDATE user SET authentication_string=password('${PASSWORD}') WHERE user='root';
+select User,Host from mysql.user;
 EOF
+        #パスワードを戻す
+        sed -i -e "s|skip-grant-tables|#skip-grant-tables|" /etc/my.cnf
 
         #cnfファイルの表示
         cat /etc/my.cnf
+        systemctl restart mysqld.service
 
         echo ""
         echo ""
@@ -230,6 +239,7 @@ EOF
 
         ---------------------------------------------
 EOF
+      echo "centosユーザーのパスワードは"${PASSWORD}"です。"
       else
         echo "CentOS7ではないため、このスクリプトは使えません。このスクリプトのインストール対象はCentOS7です。"
       fi
