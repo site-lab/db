@@ -159,12 +159,6 @@ EOF
         #sed -i -e "s|#password =|password = '${DB_PASSWORD}'|" /etc/my.cnf
         mysql -u root -p${DB_PASSWORD} --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${RPASSWORD}'; flush privileges;"
         echo ${RPASSWORD}
-#cat <<EOF >/etc/db.cnf
-#[client]
-#user = root
-#password = ${DB_PASSWORD}
-#host = localhost
-#EOF
 
 cat <<EOF >/etc/createdb.sql
 CREATE DATABASE centos;
@@ -177,16 +171,6 @@ mysql -u root -p${RPASSWORD}  -e "source /etc/createdb.sql"
 
         end_message
 
-
-        #rootでログイン
-        start_message
-        #mysql --defaults-extra-file=/etc/db.cnf
-        #source /etc/db.sql
-
-
-        #mysql -u root -p${DB_PASSWORD} --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${RPASSWORD}'; flush privileges;"
-        echo ""
-        end_message
 
         #再起動
         systemctl restart mysqld.service
