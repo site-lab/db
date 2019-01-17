@@ -127,7 +127,8 @@ symbolic-links=0
 log-error=/var/log/mysqld.log
 pid-file=/var/run/mysqld/mysqld.pid
 
-character-set-server = utf8
+character-set-server = utf8mb4
+collation-server = utf8mb4_bin
 default_password_lifetime = 0
 
 #slowクエリの設定
