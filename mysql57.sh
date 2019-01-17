@@ -157,12 +157,19 @@ EOF
         DB_PASSWORD=$(grep "A temporary password is generated" /var/log/mysqld.log | sed -s 's/.*root@localhost: //')
         #sed -i -e "s|#password =|password = '${DB_PASSWORD}'|" /etc/my.cnf
         echo ${DB_PASSWORD}
-cat <<EOF >/etc/db.cnf
-[client]
-user = root
-password = ${DB_PASSWORD}
-host = locwlhost
+#cat <<EOF >/etc/db.cnf
+#[client]
+#user = root
+#password = ${DB_PASSWORD}
+#host = localhost
+#EOF
+
+cat <<EOF >/etc/db.sql
+select User,Host from mysql.user;
+SELECT Host, User, Password FROM mysql.user;
 EOF
+mysql --user=root --password=${DB_PASSWORD}  -e "source /etc/db.sql"
+
         end_message
 
 
@@ -170,7 +177,8 @@ EOF
         start_message
         echo "rootのパスワード変更"
         mysql --defaults-extra-file=/etc/db.cnf
-        select User,Host from mysql.user;
+        source /etc/db.sql
+
 
         #mysql -u root -p${DB_PASSWORD} --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${RPASSWORD}'; flush privileges;"
         echo ""
