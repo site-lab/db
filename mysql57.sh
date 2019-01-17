@@ -127,6 +127,9 @@ default_password_lifetime = 0
 slow_query_log=ON
 slow_query_log_file=/var/log/mysql-slow.log
 long_query_time=0.01
+
+#mysqlのパスワードなしでログインできるように設定
+skip-grant-tables
 EOF
         end_message
 
@@ -144,6 +147,11 @@ EOF
         systemctl start mysqld.service
         systemctl status mysqld.service
         end_message
+
+        #ログイン
+        mysql -u root　<<EOF
+show databases;
+EOF
 
         #cnfファイルの表示
         cat /etc/my.cnf
