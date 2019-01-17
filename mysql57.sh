@@ -163,6 +163,7 @@ EOF
 use mysql
 UPDATE user SET authentication_string=password('${RPASSWORD}') WHERE user='root';
 select User,Host from mysql.user;
+exit;
 EOF
         #パスワードを戻す
         sed -i -e "s|skip-grant-tables|#skip-grant-tables|" /etc/my.cnf
@@ -174,7 +175,6 @@ EOF
         echo "rootでログイン"
         echo ""
         mysql -u root  << EOF
-CREATE USER centos@localhost IDENTIFIED BY '${UPASSWORD}';
 select User,Host from mysql.user;
 EOF
         end_message
