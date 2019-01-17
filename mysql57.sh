@@ -49,9 +49,9 @@ if [ -e /etc/redhat-release ]; then
         start_message
         #echo "centosユーザーを作成します"
         #USERNAME='centos'
-        RPASSWORD=$(more /dev/urandom  | tr -d -c '[:graph:]' | fold -w 10 | head -1)
+        RPASSWORD=$(more /dev/urandom  | tr -d -c '[:graph:]' | tr -d "1Il0O~^" | fold -w 10 | head -1)
         #userパスワード
-        UPASSWORD=$(more /dev/urandom  | tr -d -c '[:graph:]' | fold -w 10 | head -1)
+        UPASSWORD=$(more /dev/urandom  | tr -d -c '[:graph:]' | tr -d "1Il0O~^" | fold -w 10 | head -1)
 
 
         # yum updateを実行
@@ -102,6 +102,7 @@ if [ -e /etc/redhat-release ]; then
 # http://dev.mysql.com/doc/refman/5.7/en/server-configuration-defaults.html
 
 [mysqld]
+validate_password_policy=LOW
 #
 # Remove leading # and set to the amount of RAM for the most important data
 # cache in MySQL. Start at 70% of total RAM for dedicated server, else 10%.
@@ -131,7 +132,7 @@ default_password_lifetime = 0
 
 #slowクエリの設定
 slow_query_log=ON
-slow_query_log_file=/var/log/mysql-slow.log
+slow_query_log_file=/var/log/mysqld-slow.log
 long_query_time=0.01
 
 EOF
@@ -156,7 +157,8 @@ EOF
         start_message
         DB_PASSWORD=$(grep "A temporary password is generated" /var/log/mysqld.log | sed -s 's/.*root@localhost: //')
         #sed -i -e "s|#password =|password = '${DB_PASSWORD}'|" /etc/my.cnf
-        echo ${DB_PASSWORD}
+        mysql -u root -p${DB_PASSWORD} --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${RPASSWORD}'; flush privileges;"
+        echo ${RPASSWORD}
 #cat <<EOF >/etc/db.cnf
 #[client]
 #user = root
@@ -165,19 +167,17 @@ EOF
 #EOF
 
 cat <<EOF >/etc/db.sql
-select User,Host from mysql.user;
-SELECT Host, User, Password FROM mysql.user;
+SELECT user, host FROM mysql.user;
 EOF
-mysql --user=root --password=${DB_PASSWORD}  -e "source /etc/db.sql"
+mysql --user=root --password=${RPASSWORD}  -e "source /etc/db.sql"
 
         end_message
 
 
         #rootでログイン
         start_message
-        echo "rootのパスワード変更"
-        mysql --defaults-extra-file=/etc/db.cnf
-        source /etc/db.sql
+        #mysql --defaults-extra-file=/etc/db.cnf
+        #source /etc/db.sql
 
 
         #mysql -u root -p${DB_PASSWORD} --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${RPASSWORD}'; flush privileges;"
@@ -210,59 +210,6 @@ mysql --user=root --password=${DB_PASSWORD}  -e "source /etc/db.sql"
         MySQL 5.7 からユーザーのパスワードの有効期限がデフォルトで360日になりました。 360日するとパスワードの変更を促されてログインできなくなります。
         ・slow queryはデフォルトでONとなっています
         ・秒数は0.01秒となります
-        MySQL初期設定は以下の通りです
-        [root@ ~]# mysql_secure_installation
-
-        Securing the MySQL server deployment.
-
-        Enter password for user root:
-
-        The existing password for the user account root has expired. Please set a new password.
-
-        New password:"初期パスワードを入れる"
-
-        Re-enter new password:"初期パスワードを入れる"
-
-        Estimated strength of the password: 100
-        Do you wish to continue with the password provided?(Press y|Y for Yes, any other key for No) : y
-        By default, a MySQL installation has an anonymous user,
-        allowing anyone to log into MySQL without having to have
-        a user account created for them. This is intended only for
-        testing, and to make the installation go a bit smoother.
-        You should remove them before moving into a production
-        environment.
-
-        Remove anonymous users? (Press y|Y for Yes, any other key for No) : y
-        Success.
-
-
-        Normally, root should only be allowed to connect from
-        'localhost'. This ensures that someone cannot guess at
-        the root password from the network.
-
-        Disallow root login remotely? (Press y|Y for Yes, any other key for No) : y
-        Success.
-
-        By default, MySQL comes with a database named 'test' that
-        anyone can access. This is also intended only for testing,
-        and should be removed before moving into a production
-        environment.
-
-
-        Remove test database and access to it? (Press y|Y for Yes, any other key for No) : y
-         - Dropping test database...
-        Success.
-
-         - Removing privileges on test database...
-        Success.
-
-        Reloading the privilege tables will ensure that all changes
-        made so far will take effect immediately.
-
-        Reload privilege tables now? (Press y|Y for Yes, any other key for No) : y
-        Success.
-
-        All done!
 
         ---------------------------------------------
 EOF
