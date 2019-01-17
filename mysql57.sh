@@ -49,8 +49,9 @@ if [ -e /etc/redhat-release ]; then
         start_message
         #echo "centosユーザーを作成します"
         #USERNAME='centos'
+        RPASSWORD=$(more /dev/urandom  | tr -d -c '[:graph:]' | fold -w 10 | head -1)
         #userパスワード
-        UPASSWORD=$(more /dev/urandom  | tr -d -c '[:alnum:]' | fold -w 10 | head -1)
+        UPASSWORD=$(more /dev/urandom  | tr -d -c '[:graph:]' | fold -w 10 | head -1)
 
 
         # yum updateを実行
@@ -99,9 +100,6 @@ if [ -e /etc/redhat-release ]; then
         cat <<EOF >/etc/my.cnf
 # For advice on how to change settings please see
 # http://dev.mysql.com/doc/refman/5.7/en/server-configuration-defaults.html
-
-[client]
-#password =
 
 [mysqld]
 #
@@ -157,18 +155,25 @@ EOF
         #自動起動
         start_message
         DB_PASSWORD=$(grep "A temporary password is generated" /var/log/mysqld.log | sed -s 's/.*root@localhost: //')
-        sed -i -e "s|#password =|password = '${DB_PASSWORD}'|" /etc/my.cnf
-        systemctl restart mysqld.service
+        #sed -i -e "s|#password =|password = '${DB_PASSWORD}'|" /etc/my.cnf
+        echo ${DB_PASSWORD}
+cat <<EOF >/etc/db.cnf
+[client]
+user = root
+password = ${DB_PASSWORD}
+host = locwlhost
+EOF
         end_message
 
 
         #rootでログイン
         start_message
-        echo "rootでログイン"
+        echo "rootのパスワード変更"
+        mysql --defaults-extra-file=/etc/db.cnf
+        select User,Host from mysql.user;
+
+        #mysql -u root -p${DB_PASSWORD} --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${RPASSWORD}'; flush privileges;"
         echo ""
-        mysql -u root  << EOF
-select User,Host from mysql.user;
-EOF
         end_message
 
         #再起動
