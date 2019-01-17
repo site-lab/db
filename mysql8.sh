@@ -120,7 +120,8 @@ if [ -e /etc/redhat-release ]; then
 datadir=/var/lib/mysql
 socket=/var/lib/mysql/mysql.sock
 
-character-set-server = utf8
+character-set-server = utf8mb4
+collation-server = utf8mb4_bin
 default_password_lifetime = 0
 
 #slowクエリの設定
