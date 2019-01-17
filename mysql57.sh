@@ -102,6 +102,9 @@ if [ -e /etc/redhat-release ]; then
 # For advice on how to change settings please see
 # http://dev.mysql.com/doc/refman/5.7/en/server-configuration-defaults.html
 
+[client]
+#password = ${RPASSWORD}
+
 [mysqld]
 #
 # Remove leading # and set to the amount of RAM for the most important data
@@ -138,11 +141,11 @@ long_query_time=0.01
 #mysqlのパスワードなしでログインできるように設定
 skip-grant-tables
 
-[client]
-password = ${RPASSWORD}
 EOF
         end_message
 
+        #自動起動
+        chmod 600 /etc/my.cnf
         #自動起動
         start_message
         echo "MySQLの自動起動を設定"
@@ -163,10 +166,10 @@ EOF
 use mysql
 UPDATE user SET authentication_string=password('${RPASSWORD}') WHERE user='root';
 select User,Host from mysql.user;
-exit;
 EOF
         #パスワードを戻す
         sed -i -e "s|skip-grant-tables|#skip-grant-tables|" /etc/my.cnf
+        sed -i -e "s|#password = ${RPASSWORD}|password = ${RPASSWORD}|" /etc/my.cnf
 
         #再起動
         systemctl restart mysqld.service
