@@ -171,9 +171,24 @@ mysql -u root -p${RPASSWORD}  -e "source /etc/createdb.sql"
 
         end_message
 
+        #ファイルを保存
+        cat <<EOF >/etc/my.cnf.d/centos.cnf
+[client]
+user = centos
+password = ${UPASSWORD}
+host = localhost
+EOF
 
-        #再起動
         systemctl restart mysqld.service
+
+        #ファイルの保存
+        start_message
+        echo "パスワードなどを保存"
+        cat <<EOF >/root/pass.txt
+root = ${RPASSWORD}
+centos = ${UPASSWORD}
+EOF
+        end_message
 
 
 
@@ -185,10 +200,14 @@ mysql -u root -p${RPASSWORD}  -e "source /etc/createdb.sql"
         cat <<EOF
         ステータスがアクティブの場合は起動成功です
         ---------------------------------------------
-        となります。パスワードの変更は絶対行ってください
         MySQLのポリシーではパスワードは
         "8文字以上＋大文字小文字＋数値＋記号"
         でないといけないみたいです
+
+        MySQLへのログイン方法
+        centosユーザーでログインするには下記コマンドを実行してください
+        mysql --defaults-extra-file=/etc/my.cnf.d/centos.cnf
+
 
         ---------------------------------------------
         ・slow queryはデフォルトでONとなっています
