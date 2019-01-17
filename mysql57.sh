@@ -49,7 +49,7 @@ if [ -e /etc/redhat-release ]; then
         start_message
         #echo "centosユーザーを作成します"
         #USERNAME='centos'
-        RPASSWORD=$(more /dev/urandom  | tr -d -c '[:graph:]' | tr -d "1Il0O~^" | fold -w 10 | head -1)
+        RPASSWORD=$(more /dev/urandom  | tr -dc '12345678abcdefghijkmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ,.+\-\!' | fold -w 12 | grep -i [12345678] | grep -i '[,.+\-\!]' | head -n 1)
         #userパスワード
         UPASSWORD=$(more /dev/urandom  | tr -d -c '[:graph:]' | tr -d "1Il0O~^" | fold -w 10 | head -1)
 
