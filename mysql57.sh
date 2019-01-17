@@ -51,7 +51,7 @@ if [ -e /etc/redhat-release ]; then
         #USERNAME='centos'
         RPASSWORD=$(more /dev/urandom  | tr -dc '12345678abcdefghijkmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ,.+\-\!' | fold -w 12 | grep -i [12345678] | grep -i '[,.+\-\!]' | head -n 1)
         #userパスワード
-        UPASSWORD=$(more /dev/urandom  | tr -d -c '[:graph:]' | tr -d "1Il0O~^" | fold -w 10 | head -1)
+        UPASSWORD=$(more /dev/urandom  | tr -dc '12345678abcdefghijkmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ,.+\-\!' | fold -w 12 | grep -i [12345678] | grep -i '[,.+\-\!]' | head -n 1)
 
 
         # yum updateを実行
@@ -166,10 +166,14 @@ EOF
 #host = localhost
 #EOF
 
-cat <<EOF >/etc/db.sql
+cat <<EOF >/etc/createdb.sql
+CREATE DATABASE centos;
+CREATE USER 'centos'@'localhost' IDENTIFIED BY '${UPASSWORD}';
+GRANT ALL PRIVILEGES ON centos.* TO 'centos'@'localhost';
+FLUSH PRIVILEGES;
 SELECT user, host FROM mysql.user;
 EOF
-mysql --user=root --password=${RPASSWORD}  -e "source /etc/db.sql"
+mysql -u root -p${RPASSWORD}  -e "source /etc/createdb.sql"
 
         end_message
 
@@ -197,17 +201,12 @@ mysql --user=root --password=${RPASSWORD}  -e "source /etc/db.sql"
         cat <<EOF
         ステータスがアクティブの場合は起動成功です
         ---------------------------------------------
-        rootのパスワードは
-        cat /var/log/mysqld.log
-        [Note] A temporary password is generated for root@localhost:"ここにパスワードが記述されている"
-        ---------------------------------------------
         となります。パスワードの変更は絶対行ってください
         MySQLのポリシーではパスワードは
         "8文字以上＋大文字小文字＋数値＋記号"
         でないといけないみたいです
 
         ---------------------------------------------
-        MySQL 5.7 からユーザーのパスワードの有効期限がデフォルトで360日になりました。 360日するとパスワードの変更を促されてログインできなくなります。
         ・slow queryはデフォルトでONとなっています
         ・秒数は0.01秒となります
 
