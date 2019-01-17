@@ -41,7 +41,9 @@ MySQL5.7のインストールになります。MariaDBは削除します。
 * 文字コード：UTF-8
 * デフォルトの有効期限無効
 * slowクエリの設定：有効（0.01秒）
+
 ※MySQLのパスワードはデフォルトから自動で変更します。必ずメモを取ってください。MySQLのパスワードポリシーにそっていますが、万が一エラーとなる場合はパスワードを再度設定してください
+ **mysql --defaults-extra-file=/etc/my.cnf.d/centos.cnf** コマンド実行でcentosユーザーで自動ログインできます
 
 
 ## [mysql8.sh](https://github.com/site-lab/db/blob/master/mysql8.sh)
