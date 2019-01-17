@@ -49,7 +49,10 @@ if [ -e /etc/redhat-release ]; then
         start_message
         #echo "centosユーザーを作成します"
         #USERNAME='centos'
-        PASSWORD=$(more /dev/urandom  | tr -d -c '[:alnum:]' | fold -w 10 | head -1)
+        RPASSWORD=$(more /dev/urandom  | tr -d -c '[:alnum:]' | fold -w 10 | head -1)
+
+        #userパスワード
+        UPASSWORD=$(more /dev/urandom  | tr -d -c '[:alnum:]' | fold -w 10 | head -1)
 
 
         # yum updateを実行
@@ -134,6 +137,9 @@ long_query_time=0.01
 
 #mysqlのパスワードなしでログインできるように設定
 skip-grant-tables
+
+[client]
+password = ${RPASSWORD}
 EOF
         end_message
 
@@ -155,15 +161,27 @@ EOF
         #ログイン
         mysql -u root　<<EOF
 use mysql
-UPDATE user SET authentication_string=password('${PASSWORD}') WHERE user='root';
+UPDATE user SET authentication_string=password('${RPASSWORD}') WHERE user='root';
 select User,Host from mysql.user;
 EOF
         #パスワードを戻す
         sed -i -e "s|skip-grant-tables|#skip-grant-tables|" /etc/my.cnf
 
+        #再起動
+        systemctl restart mysqld.service
+        #rootでログイン
+        start_message
+        echo "rootでログイン"
+        echo ""
+        mysql -u root  << EOF
+CREATE USER centos@localhost IDENTIFIED BY '${UPASSWORD}';
+select User,Host from mysql.user;
+EOF
+        end_message
+
+
         #cnfファイルの表示
         cat /etc/my.cnf
-        systemctl restart mysqld.service
 
         echo ""
         echo ""
@@ -239,7 +257,8 @@ EOF
 
         ---------------------------------------------
 EOF
-      echo "centosユーザーのパスワードは"${PASSWORD}"です。"
+      echo "データベースのrootユーザーのパスワードは"${RPASSWORD}"です。"
+      echo "データベースのcentosユーザーのパスワードは"${UPASSWORD}"です。"
       else
         echo "CentOS7ではないため、このスクリプトは使えません。このスクリプトのインストール対象はCentOS7です。"
       fi
