@@ -49,8 +49,6 @@ if [ -e /etc/redhat-release ]; then
         start_message
         #echo "centosユーザーを作成します"
         #USERNAME='centos'
-        RPASSWORD=$(more /dev/urandom  | tr -d -c '[:alnum:]' | fold -w 10 | head -1)
-
         #userパスワード
         UPASSWORD=$(more /dev/urandom  | tr -d -c '[:alnum:]' | fold -w 10 | head -1)
 
@@ -103,7 +101,7 @@ if [ -e /etc/redhat-release ]; then
 # http://dev.mysql.com/doc/refman/5.7/en/server-configuration-defaults.html
 
 [client]
-#password = ${RPASSWORD}
+#password =
 
 [mysqld]
 #
@@ -138,14 +136,9 @@ slow_query_log=ON
 slow_query_log_file=/var/log/mysql-slow.log
 long_query_time=0.01
 
-#mysqlのパスワードなしでログインできるように設定
-skip-grant-tables
-
 EOF
         end_message
 
-        #自動起動
-        chmod 600 /etc/my.cnf
         #自動起動
         start_message
         echo "MySQLの自動起動を設定"
@@ -161,18 +154,14 @@ EOF
         systemctl status mysqld.service
         end_message
 
-        #ログイン
-        mysql -u root　<<EOF
-use mysql
-UPDATE user SET authentication_string=password('${RPASSWORD}') WHERE user='root';
-select User,Host from mysql.user;
-EOF
-        #パスワードを戻す
-        sed -i -e "s|skip-grant-tables|#skip-grant-tables|" /etc/my.cnf
-        sed -i -e "s|#password = ${RPASSWORD}|password = ${RPASSWORD}|" /etc/my.cnf
-
-        #再起動
+        #自動起動
+        start_message
+        DB_PASSWORD=$(grep "A temporary password is generated" /var/log/mysqld.log | sed -s 's/.*root@localhost: //')
+        sed -i -e "s|#password =|password = '${DB_PASSWORD}'|" /etc/my.cnf
         systemctl restart mysqld.service
+        end_message
+
+
         #rootでログイン
         start_message
         echo "rootでログイン"
@@ -181,6 +170,10 @@ EOF
 select User,Host from mysql.user;
 EOF
         end_message
+
+        #再起動
+        systemctl restart mysqld.service
+
 
 
         #cnfファイルの表示
