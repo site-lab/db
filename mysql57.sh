@@ -153,7 +153,7 @@ EOF
         systemctl status mysqld.service
         end_message
 
-        #自動起動
+        #パスワード設定
         start_message
         DB_PASSWORD=$(grep "A temporary password is generated" /var/log/mysqld.log | sed -s 's/.*root@localhost: //')
         #sed -i -e "s|#password =|password = '${DB_PASSWORD}'|" /etc/my.cnf
