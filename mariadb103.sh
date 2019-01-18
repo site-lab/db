@@ -34,6 +34,12 @@ if [ -e /etc/redhat-release ]; then
 
     if [ $DIST = "redhat" ];then
       if [ $DIST_VER = "7" ];then
+
+        #rootのパスワード
+        RPASSWORD=$(more /dev/urandom  | tr -dc '12345678abcdefghijkmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ,.+\-\!' | fold -w 12 | grep -i [12345678] | grep -i '[,.+\-\!]' | head -n 1)
+        #userパスワード
+        UPASSWORD=$(more /dev/urandom  | tr -dc '12345678abcdefghijkmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ,.+\-\!' | fold -w 12 | grep -i [12345678] | grep -i '[,.+\-\!]' | head -n 1)
+
         #EPELリポジトリのインストール
         start_message
         yum remove -y epel-release
@@ -171,15 +177,50 @@ EOF
         systemctl list-unit-files --type=service | grep mariadb
         end_message
 
+        #パスワード設定
+        start_message
+        mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${RPASSWORD}'; flush privileges;"
+        echo ${RPASSWORD}
+
+        cat <<EOF >/etc/createdb.sql
+CREATE DATABASE centos;
+CREATE USER 'centos'@'localhost' IDENTIFIED BY '${UPASSWORD}';
+GRANT ALL PRIVILEGES ON centos.* TO 'centos'@'localhost';
+FLUSH PRIVILEGES;
+SELECT user, host FROM mysql.user;
+EOF
+        mysql -u root -p${RPASSWORD}  -e "source /etc/createdb.sql"
+        end_message
+
+        #ファイルを保存
+        cat <<EOF >/etc/my.cnf.d/centos.cnf
+[client]
+user = centos
+password = ${UPASSWORD}
+host = localhost
+EOF
+
+
+        #ファイルの保存
+        start_message
+        echo "パスワードなどを保存"
+        cat <<EOF >/root/pass.txt
+root = ${RPASSWORD}
+centos = ${UPASSWORD}
+EOF
+        end_message
+
+        systemctl restart mariadb.service
+
+
 
 
         cat <<EOF
-        mysql --version
-        mysql  Ver 15.1 Distrib 10.3.11-MariaDB, for Linux (x86_64) using readline 5.1
-
-        と表示されたらインストール成功です
-
         ステータスがアクティブの場合は起動も成功です
+        MySQLへのログイン方法
+        centosユーザーでログインするには下記コマンドを実行してください
+        mysql --defaults-extra-file=/etc/my.cnf.d/centos.cnf
+
 EOF
       else
         echo "CentOS7ではないため、このスクリプトは使えません。このスクリプトのインストール対象はCentOS7です。"
