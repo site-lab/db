@@ -35,6 +35,12 @@ if [ -e /etc/redhat-release ]; then
 
     if [ $DIST = "redhat" ];then
       if [ $DIST_VER = "7" ];then
+
+        #rootのパスワード
+        RPASSWORD=$(more /dev/urandom  | tr -dc '12345678abcdefghijkmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ,.+\-\!' | fold -w 12 | grep -i [12345678] | grep -i '[,.+\-\!]' | head -n 1)
+        #userパスワード
+        UPASSWORD=$(more /dev/urandom  | tr -dc '12345678abcdefghijkmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ,.+\-\!' | fold -w 12 | grep -i [12345678] | grep -i '[,.+\-\!]' | head -n 1)
+
         #EPELリポジトリのインストール
         start_message
         yum remove -y epel-release
@@ -88,8 +94,8 @@ EOF
 
         #ファイル作成
         start_message
-        rm -rf /etc/etc/my.cnf.d/server.cnf
-        cat >/etc/etc/my.cnf.d/server.cnf <<'EOF'
+        rm -rf /etc/my.cnf.d/server.cnf
+        cat >/etc/my.cnf.d/server.cnf <<'EOF'
 #
 # These groups are read by MariaDB server.
 # Use it for options that only the server (but not clients) should see
@@ -158,6 +164,9 @@ EOF
 
         end_message
 
+
+
+
         #ディレクトリ作成
         start_message
         mkdir /var/log/mysql
@@ -181,11 +190,56 @@ EOF
         systemctl list-unit-files --type=service | grep mariadb
         end_message
 
+        #パスワード設定
+        start_message
+        mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${RPASSWORD}'; flush privileges;"
+        echo ${RPASSWORD}
+
+        cat <<EOF >/etc/createdb.sql
+CREATE DATABASE centos;
+CREATE USER 'centos'@'localhost' IDENTIFIED BY '${UPASSWORD}';
+GRANT ALL PRIVILEGES ON centos.* TO 'centos'@'localhost';
+FLUSH PRIVILEGES;
+SELECT user, host FROM mysql.user;
+EOF
+        mysql -u root -p${RPASSWORD}  -e "source /etc/createdb.sql"
+        end_message
+
+        #ファイルを保存
+        cat <<EOF >/etc/my.cnf.d/centos.cnf
+[client]
+user = centos
+password = ${UPASSWORD}
+host = localhost
+EOF
+
+
+        #ファイルの保存
+        start_message
+        echo "パスワードなどを保存"
+        cat <<EOF >/root/pass.txt
+root = ${RPASSWORD}
+centos = ${UPASSWORD}
+EOF
+        end_message
+
+        systemctl restart mariadb.service
+
+
 
 
         cat <<EOF
         ステータスがアクティブの場合は起動成功です
+
+        MySQLへのログイン方法
+        centosユーザーでログインするには下記コマンドを実行してください
+        mysql --defaults-extra-file=/etc/my.cnf.d/centos.cnf
+
 EOF
+
+        echo "データベースのrootユーザーのパスワードは"${RPASSWORD}"です。"
+        echo "データベースのcentosユーザーのパスワードは"${UPASSWORD}"です。"
+
       else
         echo "CentOS7ではないため、このスクリプトは使えません。このスクリプトのインストール対象はCentOS7です。"
       fi
