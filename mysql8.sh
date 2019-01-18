@@ -34,6 +34,12 @@ if [ -e /etc/redhat-release ]; then
 
     if [ $DIST = "redhat" ];then
       if [ $DIST_VER = "7" ];then
+
+        #rootユーザーのパスワード
+        RPASSWORD=$(more /dev/urandom  | tr -dc '12345678abcdefghijkmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ,.+\-\!' | fold -w 12 | grep -i [12345678] | grep -i '[,.+\-\!]' | head -n 1)
+        #userパスワード
+        UPASSWORD=$(more /dev/urandom  | tr -dc '12345678abcdefghijkmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ,.+\-\!' | fold -w 12 | grep -i [12345678] | grep -i '[,.+\-\!]' | head -n 1)
+
         #EPELリポジトリのインストール
         start_message
         yum remove -y epel-release
@@ -118,6 +124,7 @@ if [ -e /etc/redhat-release ]; then
 # default-authentication-plugin=mysql_native_password
 
 datadir=/var/lib/mysql
+log-error=/var/log/mysqld.log
 socket=/var/lib/mysql/mysql.sock
 
 character-set-server = utf8mb4
@@ -145,6 +152,42 @@ EOF
         systemctl start mysqld.service
         systemctl status mysqld.service
         end_message
+        #パスワード設定
+        start_message
+        DB_PASSWORD=$(grep "A temporary password is generated" /var/log/mysqld.log | sed -s 's/.*root@localhost: //')
+        #sed -i -e "s|#password =|password = '${DB_PASSWORD}'|" /etc/my.cnf
+        mysql -u root -p${DB_PASSWORD} --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${RPASSWORD}'; flush privileges;"
+        echo ${RPASSWORD}
+
+cat <<EOF >/etc/createdb.sql
+CREATE DATABASE centos;
+CREATE USER 'centos'@'localhost' IDENTIFIED BY '${UPASSWORD}';
+GRANT ALL PRIVILEGES ON centos.* TO 'centos'@'localhost';
+FLUSH PRIVILEGES;
+SELECT user, host FROM mysql.user;
+EOF
+mysql -u root -p${RPASSWORD}  -e "source /etc/createdb.sql"
+
+        end_message
+
+        #ファイルを保存
+        cat <<EOF >/etc/my.cnf.d/centos.cnf
+[client]
+user = centos
+password = ${UPASSWORD}
+host = localhost
+EOF
+
+        systemctl restart mysqld.service
+
+        #ファイルの保存
+        start_message
+        echo "パスワードなどを保存"
+        cat <<EOF >/root/pass.txt
+root = ${RPASSWORD}
+centos = ${UPASSWORD}
+EOF
+        end_message
 
 
         #cnfファイルの表示
@@ -156,18 +199,14 @@ EOF
         ステータスがアクティブの場合は起動成功です
 
         ---------------------------------------------
-        rootのパスワードは
-        cat /var/log/mysqld.log
-        [Note] A temporary password is generated for root@localhost:"ここにパスワードが記述されている"
-        ---------------------------------------------
-
-        となります。パスワードの変更は絶対行ってください
         MySQLのポリシーではパスワードは
         "8文字以上＋大文字小文字＋数値＋記号"
         でないといけないみたいです
 
+        MySQLへのログイン方法
+        centosユーザーでログインするには下記コマンドを実行してください
+        mysql --defaults-extra-file=/etc/my.cnf.d/centos.cnf
         ---------------------------------------------
-        MySQL 5.7 からユーザーのパスワードの有効期限がデフォルトで360日になりました。 360日するとパスワードの変更を促されてログインできなくなります。
         ・slow queryはデフォルトでONとなっています
         ・秒数は0.01秒となります
         ---------------------------------------------
