@@ -77,7 +77,7 @@ if [ -e /etc/redhat-release ]; then
         # MariaDBの設定ファイルを追加
         start_message
         cat >/etc/yum.repos.d/MariaDB.repo <<'EOF'
-# MariaDB 10.3 CentOS repository list
+# MariaDB 10.4 CentOS repository list
 # http://mariadb.org/mariadb/repositories/
 [mariadb]
 name = MariaDB
