@@ -5,7 +5,7 @@
 <<COMMENT
 作成者：サイトラボ
 URL：https://www.site-lab.jp/
-URL：https://www.logw.jp/
+URL：https://buildree.com/
 
 注意点：conohaのポートは全て許可前提となります。MariaDBがインストールされていない状態となります。
 
