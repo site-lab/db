@@ -19,6 +19,11 @@ Apache+PHPなどの環境構築シェルスクリプトです
 * CPU：1コア
 * SSD：20GB
 
+### IDCFクラウド
+* メモリ：1GB
+* CPU：1コア
+* SSD：15GB
+
 ### 実行方法
 SFTPなどでアップロードをして、rootユーザーもしくはsudo権限で実行
 wgetを使用する場合は[環境構築スクリプトを公開してます](https://www.logw.jp/cloudserver/8886.html)を閲覧してください。
@@ -35,6 +40,15 @@ MariaDB10.2をインストールします。
 ## [mariadb103.sh](https://github.com/site-lab/db/blob/master/mariadb103.sh)
 最新安定版のMariaDB10.3をインストールします。
 自動起動もOnとなります
+
+## [mariadb104.sh](https://github.com/site-lab/db/blob/master/mariadb104.sh)
+最新安定版のMariaDB10.4をインストールします。
+自動起動もOnとなります
+
+## [mariadb105.sh](https://github.com/site-lab/db/blob/master/mariadb105.sh)
+最新安定版のMariaDB10.4をインストールします。
+自動起動もOnとなります
+
 
 ## [mysql57.sh](https://github.com/site-lab/db/blob/master/mysql57.sh)
 MySQL5.7のインストールになります。MariaDBは削除します。
